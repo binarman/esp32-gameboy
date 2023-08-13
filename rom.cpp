@@ -45,7 +45,7 @@ static char *carts[] = {
 }
 
 
-static char *banks[] = {
+static const char *banks[] = {
 	" 32KiB",
 	" 64KiB",
 	"128KiB",
@@ -61,7 +61,7 @@ static char *banks[] = {
 	"Unknown"
 };
 
-static char *rams[] = {
+static const char *rams[] = {
 	"None",
 	"  2KiB",
 	"  8KiB",
@@ -69,7 +69,7 @@ static char *rams[] = {
 	"Unknown"
 };
 
-static char *regions[] = {
+static const char *regions[] = {
 	"Japan",
 	"Non-Japan",
 	"Unknown"

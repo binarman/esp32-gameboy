@@ -291,8 +291,6 @@ static void render_line(int line)
 	draw_bg_and_window(b, line);
 
 	draw_sprites(b, line, c, s);
-
-
 }
 
 static void draw_stuff(void)
@@ -332,9 +330,6 @@ int lcd_cycle(void)
 	int this_frame, subframe_cycles;
 	static int prev_line;
 
-	if(sdl_update())
-		return 0;
-
 	this_frame = cycles % (70224/4);
 	lcd_line = this_frame / (456/4);
 
@@ -355,7 +350,7 @@ int lcd_cycle(void)
 
 	if(prev_line == 143 && lcd_line == 144)
 	{
-		//draw_stuff();
+  	sdl_update();
 		interrupt(INTR_VBLANK);
 		sdl_frame();
 	}

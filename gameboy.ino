@@ -14,20 +14,20 @@ void setup() {
 
   sdl_init();
 
-  printf("ROM OK!\n");
+  // printf("ROM OK!\n");
 
-  mem_init();
-  printf("Mem OK!\n");
+  gameboy_mem_init();
+  // printf("Mem OK!\n");
 
   cpu_init();
-  printf("CPU OK!\n");
+  // printf("CPU OK!\n");
+  Serial.begin(115200);
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
     cpu_cycle();
 
     lcd_cycle();
 
-    timer_cycle();
+    // timer_cycle();
 }

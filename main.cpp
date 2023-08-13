@@ -24,7 +24,7 @@ int main(int argc, char *argv[])
 
 	printf("ROM OK!\n");
 
-	mem_init();
+	gameboy_mem_init();
 	printf("Mem OK!\n");
 
 	cpu_init();
