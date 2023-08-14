@@ -153,8 +153,11 @@ static void sort_sprites(struct sprite *s, int n)
 }
 
 void drawColorIndexToFrameBuffer(int x, int y, byte idx, byte *b) {
-  int offset = x + y * 160;
-  b[offset >> 2] |= (idx << ((offset & 3) << 1));
+  int screen_pixel_offset = x + y * 160;
+  int pixel_byte_id = screen_pixel_offset >> 2;
+  int bit_pixel_offset = (screen_pixel_offset & 3) << 1;
+  int clear_mask = ~(3 << bit_pixel_offset);
+  b[pixel_byte_id] = (b[pixel_byte_id] & clear_mask) | (idx << bit_pixel_offset);
 }
 
 static void draw_bg_and_window(byte *b, int line)
