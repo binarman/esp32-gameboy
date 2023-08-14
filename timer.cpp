@@ -85,11 +85,11 @@ static void timer_tick(void)
 	}
 }
 
-void timer_cycle(void)
+void timer_cycle(unsigned int cycles)
 {
 	/* The amount of ticks since we last ran */ 
-	unsigned int delta = cpu_get_cycles() - prev_time;
-	prev_time = cpu_get_cycles();
+	unsigned int delta = cycles - prev_time;
+	prev_time = cycles;
 
 	elapsed += delta * 4; /* 4 cycles to a timer tick */
 	if(elapsed >= 16)

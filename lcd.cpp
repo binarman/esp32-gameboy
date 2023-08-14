@@ -296,9 +296,8 @@ static void render_line(int line)
 	draw_sprites(b, line, c, s);
 }
 
-int lcd_cycle(void)
+int lcd_cycle(unsigned int cycles)
 {
-	int cycles = cpu_get_cycles();
 	int this_frame, subframe_cycles;
 	static int prev_line;
 

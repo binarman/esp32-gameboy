@@ -687,7 +687,7 @@ void cpu_print_debug(void)
 		c.A, c.F, c.B, c.C, c.D, c.E, c.H, c.L, c.SP, c.cycles);
 }
 
-int cpu_cycle(void)
+unsigned int cpu_cycle(void)
 {
 	unsigned char b, t;
 	unsigned short s;
@@ -696,7 +696,7 @@ int cpu_cycle(void)
 	if(halted)
 	{
 		c.cycles += 1;
-		return 1;
+		return c.cycles;
 	}
 
 	if(interrupt_flush())
@@ -2446,5 +2446,5 @@ int cpu_cycle(void)
 		break;
 	}
 
-	return 1;
+	return c.cycles;
 }

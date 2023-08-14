@@ -8,6 +8,7 @@
 
 int main(int argc, char *argv[])
 {
+#ifdef BUILD_FOR_PC
 	int r;
 	const char usage[] = "Usage: %s <rom>\n";
 
@@ -42,6 +43,6 @@ int main(int argc, char *argv[])
 	}
 
 	sdl_quit();
-
+#endif
 	return 0;
 }

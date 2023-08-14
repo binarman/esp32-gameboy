@@ -6,28 +6,50 @@
 #include "lcd.h"
 #include "sdl.h"
 #include "gbrom.h"
-
+#include <esp32-hal.h>
 
 void setup() {
-  // put your setup code here, to run once:
   int r = rom_init(gb_rom);
 
   sdl_init();
 
-  // printf("ROM OK!\n");
-
   gameboy_mem_init();
-  // printf("Mem OK!\n");
 
   cpu_init();
-  // printf("CPU OK!\n");
+
   Serial.begin(115200);
 }
 
 void loop() {
-    cpu_cycle();
+    static int count = 0;
+    static int total_cpu = 0;
+    static int total_lcd = 0;
+    static int total_timer = 0;
 
-    lcd_cycle();
+    uint32_t adjust_start = ESP.getCycleCount();
+    uint32_t cpu_start = ESP.getCycleCount();
+    unsigned int cycles = cpu_cycle();
 
-    // timer_cycle();
+    uint32_t lcd_start = ESP.getCycleCount();
+    lcd_cycle(cycles);
+
+    uint32_t timer_start = ESP.getCycleCount();
+
+    timer_cycle(cycles);
+    uint32_t finish = ESP.getCycleCount();
+
+    int adjust = cpu_start - adjust_start;
+    count++;
+    total_cpu += lcd_start - cpu_start - adjust;
+    total_lcd += timer_start - lcd_start - adjust;
+    total_timer += finish - timer_start - adjust;
+
+    if (count >= 500000) {
+      Serial.print("cpu: "); Serial.print(total_cpu/count); Serial.println("");
+      Serial.print("lcd: "); Serial.print(total_lcd/count); Serial.println("");
+      Serial.print("timer: "); Serial.print(total_timer/count); Serial.println("");
+      Serial.println("");
+      count = 0;
+      total_cpu = total_lcd = total_timer = 0;
+    }
 }
