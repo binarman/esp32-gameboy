@@ -160,7 +160,7 @@ void drawColorIndexToFrameBuffer(int x, int y, byte idx, byte *b) {
   b[pixel_byte_id] = (b[pixel_byte_id] & clear_mask) | (idx << bit_pixel_offset);
 }
 
-static void draw_bg_and_window(byte *b, int line)
+static void draw_bg_and_window(byte *b, int line, const unsigned char *raw_mem)
 {
 	int x;
 
@@ -196,14 +196,14 @@ static void draw_bg_and_window(byte *b, int line)
 		 */
 		map_offset = (ym/8)*32 + xm/8;
 
-		tile_num = mem_get_raw(0x9800 + map_select*0x400 + map_offset);
+		tile_num = raw_mem[0x9800 + map_select*0x400 + map_offset];
 		if(bg_tiledata_select)
 			tile_addr = 0x8000 + tile_num*16;
 		else
 			tile_addr = 0x9000 + ((signed char)tile_num)*16;
 
-		b1 = mem_get_raw(tile_addr+(ym%8)*2);
-		b2 = mem_get_raw(tile_addr+(ym%8)*2+1);
+		b1 = raw_mem[tile_addr+(ym%8)*2];
+		b2 = raw_mem[tile_addr+(ym%8)*2+1];
 		mask = 128>>(xm%8);
 		colour = (!!(b2&mask)<<1) | !!(b1&mask);
 		//b[line*640 + x] = colours[bgpalette[colour]];
@@ -211,7 +211,7 @@ static void draw_bg_and_window(byte *b, int line)
 	}
 }
 
-static void draw_sprites(byte *b, int line, int nsprites, struct sprite *s)
+static void draw_sprites(byte *b, int line, int nsprites, struct sprite *s, const unsigned char *raw_mem)
 {
 	int i;
 
@@ -230,8 +230,8 @@ static void draw_sprites(byte *b, int line, int nsprites, struct sprite *s)
 		tile_addr = 0x8000 + (s[i].tile*16) + sprite_line*2;
 
 		/* The two bytes of data holding the palette entries */
-		b1 = mem_get_raw(tile_addr);
-		b2 = mem_get_raw(tile_addr+1);
+		b1 = raw_mem[tile_addr];
+		b2 = raw_mem[tile_addr+1];
 
 		/* For each pixel in the line, draw it */
 		for(x = 0; x < 8; x++)
@@ -264,6 +264,7 @@ static void draw_sprites(byte *b, int line, int nsprites, struct sprite *s)
 
 static void render_line(int line)
 {
+  const unsigned char *raw_mem = mem_get_raw();
 	int i, c = 0;
 
 	struct sprite s[10];
@@ -273,14 +274,14 @@ static void render_line(int line)
 	{
 		int y;
 
-		y = mem_get_raw(0xFE00 + (i*4)) - 16;
+		y = raw_mem[0xFE00 + (i*4)] - 16;
 		if(line < y || line >= y + 8+(sprite_size*8))
 			continue;
 
 		s[c].y     = y;
-		s[c].x     = mem_get_raw(0xFE00 + (i*4) + 1)-8;
-		s[c].tile  = mem_get_raw(0xFE00 + (i*4) + 2);
-		s[c].flags = mem_get_raw(0xFE00 + (i*4) + 3);
+		s[c].x     = raw_mem[0xFE00 + (i*4) + 1]-8;
+		s[c].tile  = raw_mem[0xFE00 + (i*4) + 2];
+		s[c].flags = raw_mem[0xFE00 + (i*4) + 3];
 		c++;
 
 		if(c == 10)
@@ -291,9 +292,9 @@ static void render_line(int line)
 		sort_sprites(s, c);
 
 	/* Draw the background layer */
-	draw_bg_and_window(b, line);
+	draw_bg_and_window(b, line, raw_mem);
 
-	draw_sprites(b, line, c, s);
+	draw_sprites(b, line, c, s, raw_mem);
 }
 
 int lcd_cycle(unsigned int cycles)

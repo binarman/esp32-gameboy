@@ -22,9 +22,9 @@ void mem_bank_switch(unsigned int n)
 }
 
 /* LCD's access to VRAM */
-unsigned char mem_get_raw(unsigned short p)
+const unsigned char *mem_get_raw()
 {
-	return mem[p];
+	return mem;
 }
 
 unsigned char mem_get_byte(unsigned short i)
