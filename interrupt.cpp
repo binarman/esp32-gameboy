@@ -19,7 +19,7 @@ static unsigned int serial_masked = 1;
 static unsigned int joypad_masked = 1;
 
 /* Returns true if the cpu should be unhalted */
-int inline interrupt_flush(void)
+int interrupt_flush(void)
 {
 	/* Flush the highest priority interrupt and/or resume the cpu */
 	if(pending == 2)
