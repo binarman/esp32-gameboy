@@ -293,37 +293,6 @@ static void render_line(int line)
 	draw_sprites(b, line, c, s);
 }
 
-static void draw_stuff(void)
-{
-  byte *b = sdl_get_framebuffer();
-	int y, tx, ty;
-
-	for(ty = 0; ty < 24; ty++)
-	{
-	for(tx = 0; tx < 16; tx++)
-	{
-	for(y = 0; y<8; y++)
-	{
-		unsigned char b1, b2;
-		int tileaddr = 0x8000 +  ty*0x100 + tx*16 + y*2;
-
-		b1 = mem_get_raw(tileaddr);
-		b2 = mem_get_raw(tileaddr+1);
-   /*
-		b[(ty*640*8)+(tx*8) + (y*640) + 0 + 0x1F400] = colours[(!!(b1&0x80))<<1 | !!(b2&0x80)];
-		b[(ty*640*8)+(tx*8) + (y*640) + 1 + 0x1F400] = colours[(!!(b1&0x40))<<1 | !!(b2&0x40)];
-		b[(ty*640*8)+(tx*8) + (y*640) + 2 + 0x1F400] = colours[(!!(b1&0x20))<<1 | !!(b2&0x20)];
-		b[(ty*640*8)+(tx*8) + (y*640) + 3 + 0x1F400] = colours[(!!(b1&0x10))<<1 | !!(b2&0x10)];
-		b[(ty*640*8)+(tx*8) + (y*640) + 4 + 0x1F400] = colours[(!!(b1&0x8))<<1 | !!(b2&0x8)];
-		b[(ty*640*8)+(tx*8) + (y*640) + 5 + 0x1F400] = colours[(!!(b1&0x4))<<1 | !!(b2&0x4)];
-		b[(ty*640*8)+(tx*8) + (y*640) + 6 + 0x1F400] = colours[(!!(b1&0x2))<<1 | !!(b2&0x2)];
-		b[(ty*640*8)+(tx*8) + (y*640) + 7 + 0x1F400] = colours[(!!(b1&0x1))<<1 | !!(b2&0x1)];
-   */
-	}
-	}
-	}
-}
-
 int lcd_cycle(void)
 {
 	int cycles = cpu_get_cycles();
