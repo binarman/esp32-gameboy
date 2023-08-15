@@ -299,18 +299,38 @@ static void render_line(int line)
 
 int lcd_cycle(unsigned int cycles)
 {
-	int this_frame, subframe_cycles;
-	static int prev_line;
+	static int this_frame = 0;
+	static int prev_line = 0;
+  static int prev_cycles = 0;
 
-	this_frame = cycles % (70224/4);
-	lcd_line = this_frame / (456/4);
+  this_frame += cycles - prev_cycles;
+  if (this_frame >= 70224/4)
+    this_frame -= 70224/4;
+  prev_cycles = cycles;
 
-	if(this_frame < 204/4)
-		lcd_mode = 2;
-	else if(this_frame < 284/4)
-		lcd_mode = 3;
-	else if(this_frame < 456/4)
-		lcd_mode = 0;
+  if(this_frame < 456/4) {
+    if(this_frame < 204/4)
+      lcd_mode = 2;
+    else if(this_frame < 284/4)
+      lcd_mode = 3;
+    else {
+      lcd_mode = 0;
+      prev_line = 0;
+      lcd_line = 0;
+    }
+    return 1;
+  }
+
+  static int sub_line = 0;
+  static int prev_frame = 0;
+
+  sub_line += this_frame - prev_frame;
+
+  if (sub_line >= 456/4) {
+    sub_line -= 456/4;
+    lcd_line += 1;
+  }
+
 	if(lcd_line >= 144)
 		lcd_mode = 1;
 		
