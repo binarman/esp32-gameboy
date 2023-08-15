@@ -1,6 +1,8 @@
 #ifndef LCD_H
 #define LCD_H
-int lcd_cycle(unsigned int cycles);
+// returns true if frame updated
+// otherwise return false
+bool lcd_cycle(unsigned int cycles);
 int lcd_get_line(void);
 unsigned char lcd_get_stat();
 void lcd_write_control(unsigned char);

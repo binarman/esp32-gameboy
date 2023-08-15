@@ -297,7 +297,7 @@ static void render_line(int line)
 	draw_sprites(buffer, line, c, s, raw_mem);
 }
 
-int lcd_cycle(unsigned int cycles)
+bool lcd_cycle(unsigned int cycles)
 {
 	static int this_frame = 0;
 	static int prev_line = 0;
@@ -318,7 +318,7 @@ int lcd_cycle(unsigned int cycles)
       prev_line = 0;
       lcd_line = 0;
     }
-    return 1;
+    return false;
   }
 
   static int sub_line = 0;
@@ -345,8 +345,10 @@ int lcd_cycle(unsigned int cycles)
   	sdl_update();
 		interrupt(INTR_VBLANK);
 		sdl_frame();
+    prev_line = lcd_line;
+	  return true;
 	}
 	prev_line = lcd_line;
-	return 1;
+	return false;
 }
 
