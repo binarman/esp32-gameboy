@@ -31,39 +31,13 @@ void backlighting(bool state) {
 #define SCREEN_HEIGHT 240
 #define SCREEN_WIDTH 320
 
-#define TILES 4
-
-byte pixels[GAMEBOY_HEIGHT * GAMEBOY_WIDTH/4];
-
-static uint16_t frame_buffer[DRAW_HEIGHT * DRAW_HEIGHT / TILES];
+static uint16_t *frame_buffer;
 
 static int button_start, button_select, button_a, button_b, button_down, button_up, button_left, button_right;
 
-byte getColorIndexFromFrameBuffer(int x, int y) {
-  int offset = x + y * GAMEBOY_WIDTH;
-  return (pixels[offset >> 2] >> ((offset & 3) << 1)) & 3;
-}
-const int color[] = {0x0000, 0x5555, 0xAAAA, 0xFFFF};
-
-
-void SDL_Flip(byte *screen){
-  uint16_t row[DRAW_WIDTH];
-  int h_offset = (SCREEN_WIDTH-DRAW_WIDTH)/2;
-  int v_offset = (SCREEN_HEIGHT-DRAW_HEIGHT)/2;
-  for (int tile = 0; tile < TILES; tile++) {
-    for (int j = 0; j < DRAW_HEIGHT/TILES; j++) {
-      int orig_y = tile * GAMEBOY_HEIGHT/TILES + j * GAMEBOY_HEIGHT / DRAW_HEIGHT;
-      for (int i = 0; i < DRAW_WIDTH; i++) {
-        int orig_x = i * GAMEBOY_WIDTH / DRAW_WIDTH;
-        frame_buffer[j*DRAW_WIDTH + i] = color[getColorIndexFromFrameBuffer(orig_x, orig_y)];
-      }
-    }
-    tft->draw16bitRGBBitmap(h_offset, v_offset + tile*DRAW_HEIGHT/TILES, frame_buffer, DRAW_WIDTH, DRAW_HEIGHT/TILES);
-  }
-}
-
 void sdl_init(void)
 {
+  frame_buffer = new uint16_t[DRAW_HEIGHT * DRAW_HEIGHT];
   // GFX_EXTRA_PRE_INIT();
   tft->begin();
   pinMode(_led, OUTPUT);
@@ -104,23 +78,14 @@ unsigned int sdl_get_directions(void)
 	return (button_down*8) | (button_up*4) | (button_left*2) | button_right;
 }
 
-byte* sdl_get_framebuffer(void)
+uint16_t* sdl_get_framebuffer(void)
 {
-	return pixels;
+	return frame_buffer;
 }
 
 void sdl_frame(void)
 {
-  /*
-	if(frames == 0)
-		gettimeofday(&tv1, NULL);
-	
-	frames++;
-	if(frames % 1000 == 0)
-	{
-		gettimeofday(&tv2, NULL);
-		printf("Frames %d, seconds: %d, fps: %d\n", frames, tv2.tv_sec - tv1.tv_sec, frames/(tv2.tv_sec - tv1.tv_sec));
-	}
- */
-	SDL_Flip(pixels);
+  int h_offset = (SCREEN_WIDTH-DRAW_WIDTH)/2;
+  int v_offset = (SCREEN_HEIGHT-DRAW_HEIGHT)/2;
+  tft->draw16bitRGBBitmap(h_offset, v_offset, frame_buffer, DRAW_WIDTH, DRAW_HEIGHT);
 }

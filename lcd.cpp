@@ -152,15 +152,16 @@ static void sort_sprites(struct sprite *s, int n)
 	while(swapped);
 }
 
-void drawColorIndexToFrameBuffer(int x, int y, byte idx, byte *b) {
-  int screen_pixel_offset = x + y * 160;
-  int pixel_byte_id = screen_pixel_offset >> 2;
-  int bit_pixel_offset = (screen_pixel_offset & 3) << 1;
-  int clear_mask = ~(3 << bit_pixel_offset);
-  b[pixel_byte_id] = (b[pixel_byte_id] & clear_mask) | (idx << bit_pixel_offset);
-}
+#define GAMEBOY_HEIGHT 144
+#define GAMEBOY_WIDTH 160
+#define DRAW_HEIGHT 144
+#define DRAW_WIDTH 160
+#define SCREEN_HEIGHT 240
+#define SCREEN_WIDTH 320
 
-static void draw_bg_and_window(byte *b, int line, const unsigned char *raw_mem)
+const uint16_t palete[] = {0x0000, 0x5555, 0xAAAA, 0xFFFF};
+
+static void draw_bg_and_window(uint16_t *frame_buffer, int line, const unsigned char *raw_mem)
 {
 	int x;
 
@@ -179,8 +180,7 @@ static void draw_bg_and_window(byte *b, int line, const unsigned char *raw_mem)
 		else {
 			if(!bg_enabled)
 			{
-				//b[line*640 + x] = 0;
-        drawColorIndexToFrameBuffer(x,line,0,b);
+        frame_buffer[line*GAMEBOY_WIDTH + x] = 0;
 				return;
 			}
 			xm = (x + scroll_x)%256;
@@ -206,12 +206,12 @@ static void draw_bg_and_window(byte *b, int line, const unsigned char *raw_mem)
 		b2 = raw_mem[tile_addr+(ym%8)*2+1];
 		mask = 128>>(xm%8);
 		colour = (!!(b2&mask)<<1) | !!(b1&mask);
-		//b[line*640 + x] = colours[bgpalette[colour]];
-	  drawColorIndexToFrameBuffer(x,line,bgpalette[colour],b);
+
+    frame_buffer[line * GAMEBOY_WIDTH + x] = palete[bgpalette[colour]];
 	}
 }
 
-static void draw_sprites(byte *b, int line, int nsprites, struct sprite *s, const unsigned char *raw_mem)
+static void draw_sprites(uint16_t *frame_buffer, int line, int nsprites, struct sprite *s, const unsigned char *raw_mem)
 {
 	int i;
 
@@ -252,12 +252,12 @@ static void draw_sprites(byte *b, int line, int nsprites, struct sprite *s, cons
 			/* Sprite is behind BG, only render over palette entry 0 */
 			if(s[i].flags & PRIO)
 			{
-				unsigned int temp = b[line*640+(x + s[i].x)];
+				unsigned int temp = frame_buffer[line*GAMEBOY_WIDTH + (x + s[i].x)];
 				if(temp != colours[bgpalette[0]])
 					continue;
 			}
 			//b[line*640+(x + s[i].x)] = colours[pal[colour]];
-		  drawColorIndexToFrameBuffer(x + s[i].x,line,pal[colour],b);
+		  frame_buffer[line * GAMEBOY_WIDTH + x + s[i].x] = palete[pal[colour]];
 		}
 	}
 }
@@ -268,7 +268,7 @@ static void render_line(int line)
 	int i, c = 0;
 
 	struct sprite s[10];
-	byte *b = sdl_get_framebuffer();
+	uint16_t *buffer = sdl_get_framebuffer();
 
 	for(i = 0; i<40; i++)
 	{
@@ -292,9 +292,9 @@ static void render_line(int line)
 		sort_sprites(s, c);
 
 	/* Draw the background layer */
-	draw_bg_and_window(b, line, raw_mem);
+	draw_bg_and_window(buffer, line, raw_mem);
 
-	draw_sprites(b, line, c, s, raw_mem);
+	draw_sprites(buffer, line, c, s, raw_mem);
 }
 
 int lcd_cycle(unsigned int cycles)

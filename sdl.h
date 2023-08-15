@@ -5,7 +5,7 @@ int sdl_update(void);
 void sdl_init(void);
 void sdl_frame(void);
 void sdl_quit(void);
-byte* sdl_get_framebuffer(void);
+uint16_t* sdl_get_framebuffer(void);
 unsigned int sdl_get_buttons(void);
 unsigned int sdl_get_directions(void);
 #endif
