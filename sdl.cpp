@@ -8,9 +8,9 @@
 #define _rst  18  // ESP RST to TFT RESET
 #define _miso 25    // Not connected
 #define _led   5
-//       3.3V     // Goes to TFT LED  
+//       3.3V     // Goes to TFT LED
 //       5v       // Goes to TFT Vcc
-//       Gnd      // Goes to TFT Gnd        
+//       Gnd      // Goes to TFT Gnd
 
 Arduino_DataBus *bus = new Arduino_ESP32SPI(_dc, _cs, _sclk, _mosi, _miso);
 Arduino_GFX *tft = new Arduino_ILI9341(bus, _rst, 3 /* rotation */);
@@ -31,13 +31,13 @@ void backlighting(bool state) {
 #define SCREEN_HEIGHT 240
 #define SCREEN_WIDTH 320
 
-static uint16_t *frame_buffer;
+static uint8_t *frame_buffer;
 
 static int button_start, button_select, button_a, button_b, button_down, button_up, button_left, button_right;
 
 void sdl_init(void)
 {
-  frame_buffer = new uint16_t[DRAW_HEIGHT * DRAW_HEIGHT];
+  frame_buffer = new uint8_t[DRAW_WIDTH * DRAW_HEIGHT];
   // GFX_EXTRA_PRE_INIT();
   tft->begin();
   pinMode(_led, OUTPUT);
@@ -78,14 +78,17 @@ unsigned int sdl_get_directions(void)
 	return (button_down*8) | (button_up*4) | (button_left*2) | button_right;
 }
 
-uint16_t* sdl_get_framebuffer(void)
+uint8_t* sdl_get_framebuffer(void)
 {
 	return frame_buffer;
 }
 
 void sdl_frame(void)
 {
+  uint16_t color_palette[] = {0x0000, 0x5555, 0xAAAA, 0xFFFF};
+
   int h_offset = (SCREEN_WIDTH-DRAW_WIDTH)/2;
   int v_offset = (SCREEN_HEIGHT-DRAW_HEIGHT)/2;
-  tft->draw16bitRGBBitmap(h_offset, v_offset, frame_buffer, DRAW_WIDTH, DRAW_HEIGHT);
+  tft->drawIndexedBitmap(h_offset, v_offset, frame_buffer, color_palette, DRAW_WIDTH, DRAW_HEIGHT);
+  // tft->drawbitRGBBitmap(h_offset, v_offset, frame_buffer, DRAW_WIDTH, DRAW_HEIGHT);
 }

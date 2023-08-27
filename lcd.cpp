@@ -154,14 +154,8 @@ static void sort_sprites(struct sprite *s, int n)
 
 #define GAMEBOY_HEIGHT 144
 #define GAMEBOY_WIDTH 160
-#define DRAW_HEIGHT 144
-#define DRAW_WIDTH 160
-#define SCREEN_HEIGHT 240
-#define SCREEN_WIDTH 320
 
-const uint16_t palete[] = {0x0000, 0x5555, 0xAAAA, 0xFFFF};
-
-static void draw_bg_and_window(uint16_t *frame_buffer, int line, const unsigned char *raw_mem)
+static void draw_bg_and_window(uint8_t *frame_buffer, int line, const unsigned char *raw_mem)
 {
 	int x;
 
@@ -207,11 +201,11 @@ static void draw_bg_and_window(uint16_t *frame_buffer, int line, const unsigned 
 		mask = 128>>(xm%8);
 		colour = (!!(b2&mask)<<1) | !!(b1&mask);
 
-    frame_buffer[line * GAMEBOY_WIDTH + x] = palete[bgpalette[colour]];
+    frame_buffer[line * GAMEBOY_WIDTH + x] = bgpalette[colour];
 	}
 }
 
-static void draw_sprites(uint16_t *frame_buffer, int line, int nsprites, struct sprite *s, const unsigned char *raw_mem)
+static void draw_sprites(uint8_t *frame_buffer, int line, int nsprites, struct sprite *s, const unsigned char *raw_mem)
 {
 	int i;
 
@@ -257,7 +251,7 @@ static void draw_sprites(uint16_t *frame_buffer, int line, int nsprites, struct 
 					continue;
 			}
 			//b[line*640+(x + s[i].x)] = colours[pal[colour]];
-		  frame_buffer[line * GAMEBOY_WIDTH + x + s[i].x] = palete[pal[colour]];
+		  frame_buffer[line * GAMEBOY_WIDTH + x + s[i].x] = pal[colour];
 		}
 	}
 }
@@ -268,7 +262,7 @@ static void render_line(int line)
 	int i, c = 0;
 
 	struct sprite s[10];
-	uint16_t *buffer = sdl_get_framebuffer();
+	uint8_t *buffer = sdl_get_framebuffer();
 
 	for(i = 0; i<40; i++)
 	{
