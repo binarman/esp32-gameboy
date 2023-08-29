@@ -293,8 +293,7 @@ static void render_line(int line)
 
 bool lcd_cycle(unsigned int cycles)
 {
-	static int this_frame = 0;
-	static int prev_line = 0;
+  static int this_frame = 0;
   static int prev_cycles = 0;
 
   this_frame += cycles - prev_cycles;
@@ -302,14 +301,13 @@ bool lcd_cycle(unsigned int cycles)
     this_frame -= 70224/4;
   prev_cycles = cycles;
 
-  if(this_frame < 456/4) {
-    if(this_frame < 204/4)
+  if (this_frame < 456/4) {
+    if (this_frame < 204/4)
       lcd_mode = 2;
-    else if(this_frame < 284/4)
+    else if (this_frame < 284/4)
       lcd_mode = 3;
     else {
       lcd_mode = 0;
-      prev_line = 0;
       lcd_line = 0;
     }
     return false;
@@ -322,27 +320,25 @@ bool lcd_cycle(unsigned int cycles)
 
   if (sub_line >= 456/4) {
     sub_line -= 456/4;
+
+    if (lcd_line < 144)
+      render_line(lcd_line);
+
     lcd_line += 1;
+
+    if (lcd_line >= 144)
+      lcd_mode = 1;
+
+    if (ly_int && lcd_line == lcd_ly_compare)
+      interrupt(INTR_LCDSTAT);
+
+    if (lcd_line == 144)
+    {
+      sdl_update();
+      interrupt(INTR_VBLANK);
+      sdl_frame();
+      return true;
+    }
   }
-
-	if(lcd_line >= 144)
-		lcd_mode = 1;
-		
-	if(lcd_line != prev_line && lcd_line < 144)
-		render_line(lcd_line);
-
-	if(ly_int && lcd_line == lcd_ly_compare)
-		interrupt(INTR_LCDSTAT);
-
-	if(prev_line == 143 && lcd_line == 144)
-	{
-  	sdl_update();
-		interrupt(INTR_VBLANK);
-		sdl_frame();
-    prev_line = lcd_line;
-	  return true;
-	}
-	prev_line = lcd_line;
-	return false;
+  return false;
 }
-
