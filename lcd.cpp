@@ -157,52 +157,93 @@ static void sort_sprites(struct sprite *s, int n)
 
 static void draw_bg_and_window(uint8_t *frame_buffer, int line, const unsigned char *raw_mem)
 {
-	int x;
+  unsigned int map_select, map_offset, tile_num, tile_addr, xm, ym;
+  unsigned char b1, b2, mask, colour;
 
-	for(x = 0; x < 160; x++)
-	{
-		unsigned int map_select, map_offset, tile_num, tile_addr, xm, ym;
-		unsigned char b1, b2, mask, colour;
-
-		/* Convert LCD x,y into full 256*256 style internal coords */
-		if(line >= window_y && window_enabled && line - window_y < 144)
-		{
-			xm = x;
-			ym = line - window_y;
-			map_select = window_tilemap_select;
-		}
-		else {
-			if(!bg_enabled)
-			{
+  if (window_enabled && line >= window_y && (line - window_y) < 144)
+  {
+    xm = 0;
+    ym = line - window_y;
+    map_select = window_tilemap_select;
+  } else {
+    /* Convert LCD x,y into full 256*256 style internal coords */
+    if (!bg_enabled)
+    {
+      for (int x = 0; x < GAMEBOY_WIDTH; ++x)
         frame_buffer[line*GAMEBOY_WIDTH + x] = 0;
-				return;
-			}
-			xm = (x + scroll_x)%256;
-			ym = (line + scroll_y)%256;
-			map_select = tilemap_select;
-		}
+      return;
+    }
+    xm = scroll_x%256;
+    ym = (line + scroll_y)%256;
+    map_select = tilemap_select;
+  }
 
-		/* Which pixel is this tile on? Find its offset. */
-		/* (y/8)*32 calculates the offset of the row the y coordinate is on.
-		 * As 256/32 is 8, divide by 8 to map one to the other, this is the row number.
-		 * Then multiply the row number by the width of a row, 32, to find the offset.
-		 * Finally, add x/(256/32) to find the offset within that row. 
-		 */
-		map_offset = (ym/8)*32 + xm/8;
+  // manualy unrolled loop. It contains 3 parts
+  // - first loop draws partially visible tile on the left of the screen
+  // - second loop draws fully visible tiles
+  // - third loop draws partially visible tile on the right of the screen
+  int x = 0;
+  for (; xm % 8 != 0; ++x, xm = (x+scroll_x)%256) {
+    map_offset = (ym/8)*32 + xm/8;
 
-		tile_num = raw_mem[0x9800 + map_select*0x400 + map_offset];
-		if(bg_tiledata_select)
-			tile_addr = 0x8000 + tile_num*16;
-		else
-			tile_addr = 0x9000 + ((signed char)tile_num)*16;
+    tile_num = raw_mem[0x9800 + map_select*0x400 + map_offset];
+    if (bg_tiledata_select)
+      tile_addr = 0x8000 + tile_num*16;
+    else
+      tile_addr = 0x9000 + ((signed char)tile_num)*16;
 
-		b1 = raw_mem[tile_addr+(ym%8)*2];
-		b2 = raw_mem[tile_addr+(ym%8)*2+1];
-		mask = 128>>(xm%8);
-		colour = (!!(b2&mask)<<1) | !!(b1&mask);
+    b1 = raw_mem[tile_addr+(ym%8)*2];
+    b2 = raw_mem[tile_addr+(ym%8)*2+1];
+    mask = 128>>(xm%8);
+    colour = (!!(b2&mask)<<1) | !!(b1&mask);
 
     frame_buffer[line * GAMEBOY_WIDTH + x] = bgpalette[colour];
-	}
+  }
+  constexpr int tile_size = 8;
+	for (; x <= GAMEBOY_WIDTH - tile_size; x += tile_size, xm = (xm+tile_size)%256)
+  {
+    /* Which pixel is this tile on? Find its offset. */
+    /* (y/8)*32 calculates the offset of the row the y coordinate is on.
+     * As 256/32 is 8, divide by 8 to map one to the other, this is the row number.
+     * Then multiply the row number by the width of a row, 32, to find the offset.
+     * Finally, add x/(256/32) to find the offset within that row.
+     */
+    map_offset = (ym/tile_size)*32 + xm/tile_size;
+
+    tile_num = raw_mem[0x9800 + map_select*0x400 + map_offset];
+    if (bg_tiledata_select)
+      tile_addr = 0x8000 + tile_num*16;
+    else
+      tile_addr = 0x9000 + ((signed char)tile_num)*16;
+
+    b1 = raw_mem[tile_addr+(ym%tile_size)*2];
+    b2 = raw_mem[tile_addr+(ym%tile_size)*2+1];
+    for (int tile_offset = 0; tile_offset < tile_size; ++tile_offset) {
+      mask = 128>>(tile_offset);
+      colour = (!!(b2&mask)<<1) | !!(b1&mask);
+
+      frame_buffer[line * GAMEBOY_WIDTH + x + tile_offset] = bgpalette[colour];
+    }
+  }
+  if (x < GAMEBOY_WIDTH)
+  {
+    map_offset = (ym/tile_size)*32 + xm/tile_size;
+
+    tile_num = raw_mem[0x9800 + map_select*0x400 + map_offset];
+    if (bg_tiledata_select)
+      tile_addr = 0x8000 + tile_num*16;
+    else
+      tile_addr = 0x9000 + ((signed char)tile_num)*16;
+
+    b1 = raw_mem[tile_addr+(ym%tile_size)*2];
+    b2 = raw_mem[tile_addr+(ym%tile_size)*2+1];
+    for (int tile_offset = 0; tile_offset < GAMEBOY_WIDTH - x; ++tile_offset) {
+      mask = 128>>(tile_offset);
+      colour = (!!(b2&mask)<<1) | !!(b1&mask);
+
+      frame_buffer[line * GAMEBOY_WIDTH + x + tile_offset] = bgpalette[colour];
+    }
+  }
 }
 
 static void draw_sprites(uint8_t *frame_buffer, int line, int nsprites, struct sprite *s, const unsigned char *raw_mem)
