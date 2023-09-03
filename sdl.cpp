@@ -13,6 +13,14 @@
 //       3.3V     // Goes to TFT LED
 //       5v       // Goes to TFT Vcc
 //       Gnd      // Goes to TFT Gnd
+#define _left GPIO_NUM_14
+#define _right GPIO_NUM_26
+#define _up GPIO_NUM_2
+#define _down GPIO_NUM_27
+#define _select GPIO_NUM_15
+#define _start GPIO_NUM_35
+#define _a GPIO_NUM_33
+#define _b GPIO_NUM_32
 
 Arduino_DataBus *bus = new Arduino_ESP32SPI(_dc, _cs, _sclk, _mosi, _miso);
 Arduino_GFX *tft = new Arduino_ILI9341(bus, _rst, 3 /* rotation */);
@@ -46,7 +54,7 @@ void sdl_init(void)
   backlighting(true);
   tft->fillScreen(RED);
 
-  gpio_num_t gpios [] = {GPIO_NUM_2, GPIO_NUM_14, GPIO_NUM_27, GPIO_NUM_26, GPIO_NUM_33, GPIO_NUM_32, GPIO_NUM_15, GPIO_NUM_35};
+  gpio_num_t gpios [] = {_left, _right, _down, _up, _start, _select, _a, _b};
   for (gpio_num_t pin: gpios) {
     gpio_pad_select_gpio(pin);
     gpio_set_direction(pin, GPIO_MODE_INPUT);
@@ -56,16 +64,16 @@ void sdl_init(void)
 }
 
 int sdl_update(void){
-  button_up = !gpio_get_level(GPIO_NUM_2);
-  button_left = !gpio_get_level(GPIO_NUM_14);
-  button_down = !gpio_get_level(GPIO_NUM_27);
-  button_right = !gpio_get_level(GPIO_NUM_26);
+  button_up = !gpio_get_level(_up);
+  button_left = !gpio_get_level(_left);
+  button_down = !gpio_get_level(_down);
+  button_right = !gpio_get_level(_right);
 
-  button_start = !gpio_get_level(GPIO_NUM_15);
-  button_select = !gpio_get_level(GPIO_NUM_35);
+  button_start = !gpio_get_level(_start);
+  button_select = !gpio_get_level(_select);
 
-  button_a = !gpio_get_level(GPIO_NUM_33);
-  button_b = !gpio_get_level(GPIO_NUM_32);
+  button_a = !gpio_get_level(_a);
+  button_b = !gpio_get_level(_b);
   sdl_frame();
 	return 0;
 }
