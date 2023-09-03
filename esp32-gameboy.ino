@@ -31,6 +31,7 @@ void loop() {
     static int count = 0;
     static int total_cpu = 0;
     static int total_lcd = 0;
+    static int total_sdl = 0;
     static int total_timer = 0;
     static int total_outside_loop = 0;
 
@@ -46,6 +47,17 @@ void loop() {
     screen_updated = lcd_cycle(cycles);
 
     #ifdef PERF_REPORT
+    uint32_t sdl_start = ESP.getCycleCount();
+    #endif
+
+    if (screen_updated) {
+      static int flip = 0;
+      flip ^= 1;
+      if (flip)
+      sdl_update();
+    }
+
+    #ifdef PERF_REPORT
     uint32_t timer_start = ESP.getCycleCount();
     #endif
 
@@ -57,18 +69,20 @@ void loop() {
     int adjust = cpu_start - adjust_start;
     count++;
     total_cpu += lcd_start - cpu_start - adjust;
-    total_lcd += timer_start - lcd_start - adjust;
+    total_lcd += sdl_start - lcd_start - adjust;
+    total_sdl += timer_start - sdl_start - adjust;
     total_timer += finish - timer_start - adjust;
     total_outside_loop += loop_start - prev_loop_exit - adjust;
 
     if (count >= 500000) {
       Serial.print("cpu: "); Serial.print(total_cpu/count); Serial.println("");
       Serial.print("lcd: "); Serial.print(total_lcd/count); Serial.println("");
+      Serial.print("sdl: "); Serial.print(total_sdl/count); Serial.println("");
       Serial.print("timer: "); Serial.print(total_timer/count); Serial.println("");
       Serial.print("outside loop: "); Serial.print(total_outside_loop/count); Serial.println("");
       Serial.println("");
       count = 0;
-      total_cpu = total_lcd = total_timer = total_outside_loop = 0;
+      total_cpu = total_lcd = total_timer = total_sdl = total_outside_loop = 0;
     }
     prev_loop_exit = ESP.getCycleCount();
     #endif

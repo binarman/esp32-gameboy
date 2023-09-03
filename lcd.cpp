@@ -375,9 +375,7 @@ bool lcd_cycle(unsigned int cycles)
 
     if (lcd_line == 144)
     {
-      sdl_update();
       interrupt(INTR_VBLANK);
-      sdl_frame();
       return true;
     }
   }

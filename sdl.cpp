@@ -1,3 +1,5 @@
+#include "sdl.h"
+
 #include "SPI.h"
 #include <Arduino_GFX_Library.h>
 
@@ -64,6 +66,7 @@ int sdl_update(void){
 
   button_a = !gpio_get_level(GPIO_NUM_33);
   button_b = !gpio_get_level(GPIO_NUM_32);
+  sdl_frame();
 	return 0;
 }
 
