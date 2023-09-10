@@ -41,6 +41,7 @@ void loop() {
   static int sdl_count = 0;
   static int eumlator_cpu_cycle_begin = 0;
   static int opcode_profile[256];
+  static int sample_no = 0;
   #endif
 
   while (!screen_updated) {
@@ -91,14 +92,7 @@ void loop() {
     opcode_profile[opcode] += lcd_start - cpu_start - adjust;
 
     if (count >= 500000) {
-      // Serial.print("cpu avg: "); Serial.print(total_cpu/count); Serial.println("");
-      // Serial.print("lcd avg: "); Serial.print(total_lcd/count); Serial.println("");
-      // Serial.print("sdl avg: "); Serial.print(total_sdl/sdl_count); Serial.println("");
-      // Serial.print("timer avg: "); Serial.print(total_timer/count); Serial.println("");
-      // Serial.print("outside loop avg: "); Serial.print(total_outside_loop/count); Serial.println("");
-      // float perf_ratio = (1050000.0f/240000000.0f) * (total_cpu+total_lcd+total_sdl+total_timer)/(cycles - eumlator_cpu_cycle_begin);
-      // Serial.print("emulator/real hardware ratio: "); Serial.print(perf_ratio); Serial.println("");
-      // Serial.println("");
+      printf("sample no: %d\n", sample_no);
       printf("cpu avg: %d\n", total_cpu/count);
       printf("lcd avg: %d\n", total_lcd/count);
       printf("sdl avg: %d\n", total_sdl/sdl_count);
@@ -124,6 +118,7 @@ void loop() {
       sdl_count = 0;
       eumlator_cpu_cycle_begin = cycles;
       total_cpu = total_lcd = total_timer = total_sdl = total_outside_loop = 0;
+      sample_no++;
     }
     prev_loop_exit = ESP.getCycleCount();
     #endif
