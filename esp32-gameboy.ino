@@ -40,10 +40,14 @@ void loop() {
   static int total_outside_loop = 0;
   static int sdl_count = 0;
   static int eumlator_cpu_cycle_begin = 0;
+  static int opcode_profile[256];
   #endif
 
   while (!screen_updated) {
     #ifdef PERF_REPORT
+    auto pc = cpu_get_pc();
+    unsigned char opcode = mem_get_byte(pc);
+
     uint32_t loop_start = ESP.getCycleCount();
     uint32_t adjust_start = ESP.getCycleCount();
     uint32_t cpu_start = ESP.getCycleCount();
@@ -84,6 +88,7 @@ void loop() {
     total_sdl += timer_start - sdl_start - adjust;
     total_timer += finish - timer_start - adjust;
     total_outside_loop += loop_start - prev_loop_exit - adjust;
+    opcode_profile[opcode] += lcd_start - cpu_start - adjust;
 
     if (count >= 500000) {
       // Serial.print("cpu avg: "); Serial.print(total_cpu/count); Serial.println("");
@@ -102,7 +107,18 @@ void loop() {
       uint32_t host_cycles = total_cpu+total_lcd+total_sdl+total_timer;
       uint32_t emulated_cycles = cycles - eumlator_cpu_cycle_begin;
       float perf_ratio = (1050000.0f/cpu_freq) * host_cycles / emulated_cycles;
-      printf("emulator/real hardware ratio: %f\n\n", perf_ratio);
+      printf("emulator/real hardware ratio: %f\n", perf_ratio);
+
+      int longest_opcode = 0;
+      int opcode_cycles = opcode_profile[0];
+      for (int i = 0; i < sizeof(opcode_profile)/sizeof(int); ++i) {
+        if (opcode_profile[i] > opcode_cycles) {
+          opcode_cycles = opcode_profile[i];
+          longest_opcode = i;
+        }
+        opcode_profile[i] = 0;
+      }
+      printf("longest opcode: %d, took %d cycles\n\n", longest_opcode, opcode_cycles);
 
       count = 0;
       sdl_count = 0;

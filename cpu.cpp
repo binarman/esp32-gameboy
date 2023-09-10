@@ -680,6 +680,11 @@ unsigned int cpu_get_cycles(void)
 	return c.cycles;
 }
 
+unsigned short cpu_get_pc()
+{
+  return c.PC;
+}
+
 void cpu_print_debug(void)
 {
 	printf("%04X: %02X\n", c.PC, mem_get_byte(c.PC));
