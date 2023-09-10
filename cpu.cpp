@@ -2453,3 +2453,13 @@ unsigned int cpu_cycle(void)
 
 	return c.cycles;
 }
+
+#ifdef INTER_MODULE_OPT
+// with INTER_MODULE_OPT on contents of mem and interrupt modules are excluded
+// to prevent multiple definitions of symbols in these files
+#undef INTER_MODULE_OPT
+#include "mem.cpp"
+#include "interrupt.cpp"
+#include "timer.cpp"
+#define INTER_MODULE_OPT
+#endif

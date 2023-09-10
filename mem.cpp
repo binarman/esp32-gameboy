@@ -1,3 +1,8 @@
+// If INTER_MODULE_OPT macro is defined,
+// this file is included into cpu.cpp
+// to make inter module optimizations possible
+#ifndef INTER_MODULE_OPT
+
 #include <stdlib.h>
 #include <string.h>
 #include "mem.h"
@@ -227,3 +232,5 @@ void gameboy_mem_init(void)
 	mem[0xFF48] = 0xFF;
 	mem[0xFF49] = 0xFF;
 }
+
+#endif // INTER_MODULE_OPT

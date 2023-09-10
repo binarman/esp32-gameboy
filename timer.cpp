@@ -1,3 +1,8 @@
+// If INTER_MODULE_OPT macro is defined,
+// this file is included into cpu.cpp
+// to make inter module optimizations possible
+#ifndef INTER_MODULE_OPT
+
 #include "timer.h"
 #include "interrupt.h"
 #include "cpu.h"
@@ -98,3 +103,5 @@ void timer_cycle(unsigned int cycles)
 		elapsed -= 16;	/* keep track of the time overflow */
 	}
 }
+
+#endif // INTER_MODULE_OPT

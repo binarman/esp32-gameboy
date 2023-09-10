@@ -1,3 +1,8 @@
+// If INTER_MODULE_OPT macro is defined,
+// this file is included into cpu.cpp
+// to make inter module optimizations possible
+#ifndef INTER_MODULE_OPT
+
 #include "interrupt.h"
 #include "cpu.h"
 
@@ -156,3 +161,5 @@ void interrupt_set_mask(unsigned char mask)
 	serial_masked  = !(mask & 0x08);
 	joypad_masked  = !(mask & 0x10);
 }
+
+#endif // INTER_MODULE_OPT
