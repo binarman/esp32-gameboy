@@ -28,11 +28,13 @@ void setup() {
 
 #define PERF_REPORT
 
+#define REPORT_INTERVAL 60
+
 void loop() {
   bool screen_updated = false;
   #ifdef PERF_REPORT
   static uint32_t prev_loop_exit = 0;
-  static int count = 0;
+  static int frames_count = 0;
   static int total_cpu = 0;
   static int total_lcd = 0;
   static int total_sdl = 0;
@@ -42,6 +44,9 @@ void loop() {
   static int eumlator_cpu_cycle_begin = 0;
   static int opcode_profile[256];
   static int sample_no = 0;
+  uint32_t start_frame_cycle = ESP.getCycleCount();
+  static int frame_cycles[REPORT_INTERVAL] = {};
+  frames_count++;
   #endif
 
   while (!screen_updated) {
@@ -82,8 +87,11 @@ void loop() {
     #ifdef PERF_REPORT
     uint32_t finish = ESP.getCycleCount();
 
+    if (screen_updated) {
+      frame_cycles[frames_count-1] = finish - start_frame_cycle;
+    }
+
     int adjust = cpu_start - adjust_start;
-    count++;
     total_cpu += lcd_start - cpu_start - adjust;
     total_lcd += sdl_start - lcd_start - adjust;
     total_sdl += timer_start - sdl_start - adjust;
@@ -91,17 +99,32 @@ void loop() {
     total_outside_loop += loop_start - prev_loop_exit - adjust;
     opcode_profile[opcode] += lcd_start - cpu_start - adjust;
 
-    if (count >= 500000) {
+    if (frames_count >= REPORT_INTERVAL && screen_updated) {
+      int min_cycles_per_frame = std::numeric_limits<int>::max();
+      int max_cycles_per_frame = 0;
+      int avg_cycles_per_frame = 0;
+      for (int i = 0; i < REPORT_INTERVAL; ++i) {
+        min_cycles_per_frame = std::min(min_cycles_per_frame, frame_cycles[i]);
+        max_cycles_per_frame = std::max(max_cycles_per_frame, frame_cycles[i]);
+        // printf("   %d\n", frame_cycles[i]/1000000);
+        avg_cycles_per_frame += frame_cycles[i];
+      }
+      avg_cycles_per_frame /= frames_count;
+
       printf("sample no: %d\n", sample_no);
-      printf("cpu avg: %d\n", total_cpu/count);
-      printf("lcd avg: %d\n", total_lcd/count);
+      printf("cpu avg: %d\n", total_cpu/frames_count);
+      printf("lcd avg: %d\n", total_lcd/frames_count);
       printf("sdl avg: %d\n", total_sdl/sdl_count);
-      printf("timer avg: %d\n", total_timer/count);
-      printf("outside loop avg: %d\n", total_outside_loop/count);
+      printf("timer avg: %d\n", total_timer/frames_count);
+      printf("outside loop avg: %d\n", total_outside_loop/frames_count);
       uint32_t host_cycles = total_cpu+total_lcd+total_sdl+total_timer;
       uint32_t emulated_cycles = cycles - eumlator_cpu_cycle_begin;
       float perf_ratio = (1050000.0f/cpu_freq) * host_cycles / emulated_cycles;
       printf("emulator/real hardware ratio: %f\n", perf_ratio);
+      printf("average cycles per frame: %d\n", avg_cycles_per_frame);
+      printf("min cycles per frame: %d\n", min_cycles_per_frame);
+      printf("max cycles per frame: %d\n", max_cycles_per_frame);
+
 
       int longest_opcode = 0;
       int opcode_cycles = opcode_profile[0];
@@ -114,7 +137,7 @@ void loop() {
       }
       printf("longest opcode: %d, took %d cycles\n\n", longest_opcode, opcode_cycles);
 
-      count = 0;
+      frames_count = 0;
       sdl_count = 0;
       eumlator_cpu_cycle_begin = cycles;
       total_cpu = total_lcd = total_timer = total_sdl = total_outside_loop = 0;
