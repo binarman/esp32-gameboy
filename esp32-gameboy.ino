@@ -41,11 +41,13 @@ void loop() {
   static int total_timer = 0;
   static int total_outside_loop = 0;
   static int sdl_count = 0;
-  static int eumlator_cpu_cycle_begin = 0;
+  static uint32_t eumlator_cpu_cycle_begin = 0;
   static int opcode_profile[256];
   static int sample_no = 0;
   uint32_t start_frame_cycle = ESP.getCycleCount();
+  uint32_t start_bank_switches = mem_get_bank_switches();
   static int frame_cycles[REPORT_INTERVAL] = {};
+  static int bank_switches[REPORT_INTERVAL] = {};
   frames_count++;
   #endif
 
@@ -89,6 +91,7 @@ void loop() {
 
     if (screen_updated) {
       frame_cycles[frames_count-1] = finish - start_frame_cycle;
+      bank_switches[frames_count-1] = mem_get_bank_switches() - start_bank_switches;
     }
 
     int adjust = cpu_start - adjust_start;
@@ -103,11 +106,12 @@ void loop() {
       int min_cycles_per_frame = std::numeric_limits<int>::max();
       int max_cycles_per_frame = 0;
       int avg_cycles_per_frame = 0;
+      int total_bank_switches = 0;
       for (int i = 0; i < REPORT_INTERVAL; ++i) {
         min_cycles_per_frame = std::min(min_cycles_per_frame, frame_cycles[i]);
         max_cycles_per_frame = std::max(max_cycles_per_frame, frame_cycles[i]);
-        // printf("   %d\n", frame_cycles[i]/1000000);
         avg_cycles_per_frame += frame_cycles[i];
+        total_bank_switches += bank_switches[i];
       }
       avg_cycles_per_frame /= frames_count;
 
@@ -121,10 +125,11 @@ void loop() {
       uint32_t emulated_cycles = cycles - eumlator_cpu_cycle_begin;
       float perf_ratio = (1050000.0f/cpu_freq) * host_cycles / emulated_cycles;
       printf("emulator/real hardware ratio: %f\n", perf_ratio);
+      printf("emulated cycles: %d\n", emulated_cycles);
       printf("average cycles per frame: %d\n", avg_cycles_per_frame);
       printf("min cycles per frame: %d\n", min_cycles_per_frame);
       printf("max cycles per frame: %d\n", max_cycles_per_frame);
-
+      printf("bank switches: %d\n", total_bank_switches);
 
       int longest_opcode = 0;
       int opcode_cycles = opcode_profile[0];

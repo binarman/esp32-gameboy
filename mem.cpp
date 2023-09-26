@@ -18,10 +18,16 @@
 static unsigned char *mem;
 static int DMA_pending = 0;
 static int joypad_select_buttons, joypad_select_directions;
+static uint32_t bank_switches = 0;
+
+uint32_t mem_get_bank_switches() {
+  return bank_switches;
+}
 
 void mem_bank_switch(unsigned int n)
 {
 	const unsigned char *b = rom_getbytes();
+  bank_switches++;
 
 	memcpy(&mem[0x4000], &b[n * 0x4000], 0x4000);
 }
