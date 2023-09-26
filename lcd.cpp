@@ -332,20 +332,27 @@ static void render_line(int line)
 	draw_sprites(buffer, line, c, s, raw_mem);
 }
 
+#define CYCLES_PER_FRAME (70224/4)
+#define CYCLES_PER_LINE (456/4)
+
 bool lcd_cycle(unsigned int cycles)
 {
-  static int this_frame = 0;
-  static int prev_cycles = 0;
+  static int this_frame_cycles = 0;
+  static unsigned int prev_cycles = 0;
+  static int sub_line = 0;
+  static int prev_update_cycles = 0;
 
-  this_frame += cycles - prev_cycles;
-  if (this_frame >= 70224/4)
-    this_frame -= 70224/4;
+  this_frame_cycles += cycles - prev_cycles;
   prev_cycles = cycles;
+  if (this_frame_cycles >= CYCLES_PER_FRAME) {
+    this_frame_cycles -= CYCLES_PER_FRAME;
+    prev_update_cycles -= CYCLES_PER_FRAME;
+  }
 
-  if (this_frame < 456/4) {
-    if (this_frame < 204/4)
+  if (this_frame_cycles < 456/4) {
+    if (this_frame_cycles < 204/4)
       lcd_mode = 2;
-    else if (this_frame < 284/4)
+    else if (this_frame_cycles < 284/4)
       lcd_mode = 3;
     else {
       lcd_mode = 0;
@@ -354,13 +361,12 @@ bool lcd_cycle(unsigned int cycles)
     return false;
   }
 
-  static int sub_line = 0;
-  static int prev_frame = 0;
+  sub_line += this_frame_cycles - prev_update_cycles;
 
-  sub_line += this_frame - prev_frame;
+  prev_update_cycles = this_frame_cycles;
 
-  if (sub_line >= 456/4) {
-    sub_line -= 456/4;
+  if (sub_line >= CYCLES_PER_LINE) {
+    sub_line -= CYCLES_PER_LINE;
 
     if (lcd_line < 144)
       render_line(lcd_line);
