@@ -48,6 +48,23 @@ static uint8_t *frame_buffer;
 
 static int button_start, button_select, button_a, button_b, button_down, button_up, button_left, button_right;
 
+static volatile bool frame_ready = false;
+TaskHandle_t draw_task_handle;
+
+void draw_task(void *parameter) {
+  uint16_t color_palette[] = {0xffff, (16 << 11) + (32 << 5) + 16, (8 << 11) + (16 << 5) + 8, 0x0000};
+
+  int h_offset = (SCREEN_WIDTH-DRAW_WIDTH)/2;
+  int v_offset = (SCREEN_HEIGHT-DRAW_HEIGHT)/2;
+  while (true) {
+    while (!frame_ready) {
+      delay(1);
+    }
+    frame_ready = false;
+    tft->drawIndexedBitmap(h_offset, v_offset, frame_buffer, color_palette, DRAW_WIDTH, DRAW_HEIGHT);
+  }
+}
+
 void sdl_init(void)
 {
   frame_buffer = new uint8_t[DRAW_WIDTH * DRAW_HEIGHT];
@@ -64,6 +81,15 @@ void sdl_init(void)
     // uncomment to use builtin pullup resistors
 //    gpio_set_pull_mode(pin, GPIO_PULLUP_ONLY);
   }
+  xTaskCreatePinnedToCore(
+    draw_task, /* Function to implement the task */
+    "drawTask", /* Name of the task */
+    10000,  /* Stack size in words */
+    NULL,  /* Task input parameter */
+    0,  /* Priority of the task */
+    &draw_task_handle,  /* Task handle. */
+    0); /* Core where the task should run */
+
 }
 
 int sdl_update(void){
@@ -99,10 +125,5 @@ uint8_t* sdl_get_framebuffer(void)
 
 void sdl_frame(void)
 {
-  uint16_t color_palette[] = {0xffff, (16 << 11) + (32 << 5) + 16, (8 << 11) + (16 << 5) + 8, 0x0000};
-
-  int h_offset = (SCREEN_WIDTH-DRAW_WIDTH)/2;
-  int v_offset = (SCREEN_HEIGHT-DRAW_HEIGHT)/2;
-  tft->drawIndexedBitmap(h_offset, v_offset, frame_buffer, color_palette, DRAW_WIDTH, DRAW_HEIGHT);
-  // tft->drawbitRGBBitmap(h_offset, v_offset, frame_buffer, DRAW_WIDTH, DRAW_HEIGHT);
+  frame_ready = true;
 }
