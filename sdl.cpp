@@ -99,7 +99,7 @@ uint8_t* sdl_get_framebuffer(void)
 
 void sdl_frame(void)
 {
-  uint16_t color_palette[] = {0x0000, 0x5555, 0xAAAA, 0xFFFF};
+  uint16_t color_palette[] = {0xffff, (16 << 11) + (32 << 5) + 16, (8 << 11) + (16 << 5) + 8, 0x0000};
 
   int h_offset = (SCREEN_WIDTH-DRAW_WIDTH)/2;
   int v_offset = (SCREEN_HEIGHT-DRAW_HEIGHT)/2;
