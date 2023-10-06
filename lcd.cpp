@@ -33,7 +33,6 @@ static int window_x, window_y;
 static byte bgpalette[] = {3, 2, 1, 0};
 static byte sprpalette1[] = {0, 1, 2, 3};
 static byte sprpalette2[] = {0, 1, 2, 3};
-static unsigned long colours[4] = {0xFFFFFF, 0xC0C0C0, 0x808080, 0x000000};
 
 struct sprite {
 	int y, x, tile, flags;
@@ -288,10 +287,9 @@ static void draw_sprites(uint8_t *frame_buffer, int line, int nsprites, struct s
 			if(s[i].flags & PRIO)
 			{
 				unsigned int temp = frame_buffer[line*GAMEBOY_WIDTH + (x + s[i].x)];
-				if(temp != colours[bgpalette[0]])
+				if(temp != pal[bgpalette[0]])
 					continue;
 			}
-			//b[line*640+(x + s[i].x)] = colours[pal[colour]];
 		  frame_buffer[line * GAMEBOY_WIDTH + x + s[i].x] = pal[colour];
 		}
 	}
