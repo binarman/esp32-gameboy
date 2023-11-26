@@ -6,6 +6,7 @@
 #include "lcd.h"
 #include "sdl.h"
 #include "gbrom.h"
+#include "sd.h"
 #include <esp32-hal.h>
 
 static constexpr uint32_t emulator_cpu_freq = 4200000/4;
@@ -18,6 +19,7 @@ void setup() {
   int r = rom_init(gb_rom);
 
   sdl_init();
+  sd_init();
 
   gameboy_mem_init();
 

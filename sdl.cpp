@@ -13,7 +13,7 @@
 //       3.3V     // Goes to TFT LED
 //       5v       // Goes to TFT Vcc
 //       Gnd      // Goes to TFT Gnd
-#define _left GPIO_NUM_14
+#define _left GPIO_NUM_4
 #define _right GPIO_NUM_26
 #define _up GPIO_NUM_2
 #define _down GPIO_NUM_27
