@@ -12,10 +12,10 @@ int interrupt_pending(void);
 int interrupt_flush(void);
 
 enum {
-	INTR_VBLANK  = 0x01,
-	INTR_LCDSTAT = 0x02,
-	INTR_TIMER   = 0x04,
-	INTR_SERIAL  = 0x08,
-	INTR_JOYPAD  = 0x10
+  INTR_VBLANK = 0x01,
+  INTR_LCDSTAT = 0x02,
+  INTR_TIMER = 0x04,
+  INTR_SERIAL = 0x08,
+  INTR_JOYPAD = 0x10
 };
 #endif

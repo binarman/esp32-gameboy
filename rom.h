@@ -11,17 +11,16 @@ const unsigned char *rom_getbytes(void);
 unsigned int rom_get_mapper(void);
 
 enum {
-	NROM,
-	MBC1,
-	MBC2,
-	MMM01,
-	MBC3,
-	MBC4,
-	MBC5,
+  NROM,
+  MBC1,
+  MBC2,
+  MMM01,
+  MBC3,
+  MBC4,
+  MBC5,
 };
 #ifdef __cplusplus
-
-  }
+}
 
 #endif /* end of __cplusplus */
 #endif
