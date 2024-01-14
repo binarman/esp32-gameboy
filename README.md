@@ -33,10 +33,7 @@ looking for '2.2 inch SPI 320 240 ILI9341' on eBay or other shopping sites.
 
 # How do I program the chip?
 
-rename GB ROM to gb.gb
+1. Download GB ROM you want (or leave everything as-is with example ROM and go to step 3)
+2. Run `python3 ./bin2h.py -b <path to your GD ROM you downloaded> -c gbrom.h -v gb_rom`
+3. Compile and upload esp32-gameboy.ino firmware
 
-run rom2h.bat
-
-run gameboy.ino
-
-update!
