@@ -52,6 +52,24 @@ static int button_start, button_select, button_a, button_b, button_down,
 static volatile bool frame_ready = false;
 TaskHandle_t draw_task_handle;
 
+void draw_button(bool value, int x_pos, int y_pos,
+                 const char *label = nullptr) {
+  if (value) {
+    tft->fillCircle(x_pos, y_pos, 7, 0xffff);
+  } else {
+    tft->fillCircle(x_pos, y_pos, 7, 0x0000);
+  }
+  if (label) {
+    int len = strlen(label);
+    constexpr int char_len = 8;
+    int width = char_len * len;
+    for (int i = 0; i < len; ++i) {
+      tft->drawChar(x_pos - width / 2 + char_len * i, y_pos + 20, label[i],
+                    0xffff, RED);
+    }
+  }
+}
+
 void draw_task(void *parameter) {
   uint16_t color_palette[] = {0xffff, (16 << 11) + (32 << 5) + 16,
                               (8 << 11) + (16 << 5) + 8, 0x0000};
@@ -65,6 +83,16 @@ void draw_task(void *parameter) {
     frame_ready = false;
     tft->drawIndexedBitmap(h_offset, v_offset, frame_buffer, color_palette,
                            DRAW_WIDTH, DRAW_HEIGHT);
+    draw_button(button_up, 30, SCREEN_HEIGHT / 2 - 15);
+    draw_button(button_left, 15, SCREEN_HEIGHT / 2);
+    draw_button(button_right, 45, SCREEN_HEIGHT / 2);
+    draw_button(button_down, 30, SCREEN_HEIGHT / 2 + 15);
+
+    draw_button(button_select, 30, SCREEN_HEIGHT / 2 + 70, "select");
+    draw_button(button_start, SCREEN_WIDTH - 30, SCREEN_HEIGHT / 2 + 70,
+                "start");
+    draw_button(button_a, SCREEN_WIDTH - 45, SCREEN_HEIGHT / 2, "a");
+    draw_button(button_b, SCREEN_WIDTH - 15, SCREEN_HEIGHT / 2 - 15, "b");
   }
 }
 
