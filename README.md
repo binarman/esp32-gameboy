@@ -37,3 +37,5 @@ looking for '2.2 inch SPI 320 240 ILI9341' on eBay or other shopping sites.
 2. Run `python3 ./bin2h.py -b <path to your GD ROM you downloaded> -c gbrom.h -v gb_rom`
 3. Compile and upload esp32-gameboy.ino firmware
 
+By default, installed game is minesweeper: https://danirod.itch.io/minesweeper-gb
+Source code: https://github.com/danirod-live/minesweeper-gb

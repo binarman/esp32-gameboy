@@ -19,7 +19,9 @@ def main():
       else:
         f.write(" ")
       elem = data[i]
-      f.write("0x{},".format(format(elem, "02x")))
+      f.write("0x{}".format(format(elem, "02x")))
+      if i != len(data) - 1:
+        f.write(",")
     f.write("}};\nconst int {}_size = {};\n".format(args.variable, len(data)))
 
 if __name__ == "__main__":
