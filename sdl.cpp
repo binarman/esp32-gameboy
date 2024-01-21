@@ -16,7 +16,7 @@
 //       Gnd      // Goes to TFT Gnd
 #define _left GPIO_NUM_4
 #define _right GPIO_NUM_26
-#define _up GPIO_NUM_2
+#define _up GPIO_NUM_17
 #define _down GPIO_NUM_27
 #define _select GPIO_NUM_15
 #define _start GPIO_NUM_35
